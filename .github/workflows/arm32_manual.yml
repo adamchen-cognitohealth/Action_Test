@@ -15,30 +15,22 @@ jobs:
       with:
         arch: armv7
         distro: ubuntu18.04
+        # Not required, but speeds up builds
+        githubToken: ${{ github.token }}
+        # The shell to run commands with in the container
+        shell: /bin/sh
         run: |
           uname -a
           echo ::set-output name=uname::$(uname -a)
-
-    - name: Install libffi-dev
-      run: sudo apt update | sudo apt install libffi-dev
-    - name: Install cffi
-      run: pip3 install cffi
-
-    - name: Compile C code
-      run: make
-    - name: Load LVGL
-      run: sudo cp liblvgl.so /usr/local/lib | sudo ldconfig
-    - name: Compile build.py
-      run: python3 build.py
-
-    - name: Move built files to output folder
-      run: mkdir -p output | mv _* liblvgl.so output
-    - name: Git add
-      run: git add -f output/*
-    - name: Git push commit
-      run: |
-        git config --global user.name 'github workflow'
-        git config --global user.email 'github-workflow@users.noreply.github.com'
-        git diff --quiet && git diff --staged --quiet || git commit -am 'manual workflow build'
-        git push
+          sudo apt update | sudo apt install libffi-dev
+          pip3 install cffi
+          make
+          sudo cp liblvgl.so /usr/local/lib | sudo ldconfig
+          python3 build.py
+          mkdir -p output | mv _* liblvgl.so output
+          git add -f output/*
+          git config --global user.name 'github workflow'
+          git config --global user.email 'github-workflow@users.noreply.github.com'
+          git diff --quiet && git diff --staged --quiet || git commit -am 'manual workflow build'
+          git push
 
