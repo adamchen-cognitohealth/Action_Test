@@ -30,10 +30,13 @@ jobs:
           python3 build.py
           echo 333333333333
           mkdir -p output | mv _* liblvgl.so output
-          git add -f output/*
-          echo 444444444444
-          git config --global user.name 'github workflow'
-          git config --global user.email 'github-workflow@users.noreply.github.com'
-          git diff --quiet && git diff --staged --quiet || git commit -am 'manual workflow build'
-          git push
+
+    - name: Git push commit
+      run: |
+        git config --global user.name 'github workflow'
+        git config --global user.email 'github-workflow@users.noreply.github.com'
+        git checkout build
+        git add -f output/*
+        git diff --quiet && git diff --staged --quiet || git commit -am 'manual workflow build'
+        git push
 
