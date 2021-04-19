@@ -20,10 +20,10 @@ jobs:
         run: |
           uname -a
           echo ::set-output name=uname::$(uname -a)
-          sudo apt update | sudo apt install libffi-dev
+          apt update | sudo apt install libffi-dev
           pip3 install cffi
           make
-          sudo cp liblvgl.so /usr/local/lib | sudo ldconfig
+          cp liblvgl.so /usr/local/lib | sudo ldconfig
           python3 build.py
           mkdir -p output | mv _* liblvgl.so output
           git add -f output/*
