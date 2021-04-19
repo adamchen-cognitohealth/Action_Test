@@ -21,7 +21,7 @@ jobs:
           uname -a
           echo ::set-output name=uname::$(uname -a)
           apt-get update -y
-          apt-get install libffi-dev python3-pip -y
+          apt-get install libffi-dev python3-pip git -y
           pip3 install cffi
           echo 111111111111
           make
