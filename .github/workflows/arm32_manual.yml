@@ -1,40 +1,41 @@
-# This is a basic workflow to help you get started with Actions
+# Manual deployments
+name: Manual Build
 
-name: arm32_manual
-
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the main branch
 on: [workflow_dispatch]
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
+    - uses: uraimo/run-on-arch-action@v2.0.5
+      name: Run commands
+      id: runcmd
+      with:
+        arch: armv7
+        distro: ubuntu18.04
 
-      - uses: uraimo/run-on-arch-action@v2.0.5
-        name: Run commands
-        id: runcmd
-        with:
-          arch: armv7
-          distro: ubuntu18.04
+    - name: Install libffi-dev
+      run: sudo apt update | sudo apt install libffi-dev
+    - name: Install cffi
+      run: pip3 install cffi
 
-          # Not required, but speeds up builds by storing container images in
-          # a GitHub package registry.
-          githubToken: ${{ github.token }}
+    - name: Compile C code
+      run: make
+    - name: Load LVGL
+      run: sudo cp liblvgl.so /usr/local/lib | sudo ldconfig
+    - name: Compile build.py
+      run: python3 build.py
 
-          # Set an output parameter `uname` for use in subsequent steps
-          run: |
-            uname -a
-            echo ::set-output name=uname::$(uname -a)
+    - name: Move built files to output folder
+      run: mkdir -p output | mv _* liblvgl.so output
+    - name: Git add
+      run: git add -f output/*
+    - name: Git push commit
+      run: |
+        git config --global user.name 'github workflow'
+        git config --global user.email 'github-workflow@users.noreply.github.com'
+        git diff --quiet && git diff --staged --quiet || git commit -am 'manual workflow build'
+        git push
 
-      - name: Get the output
-        # Echo the `uname` output parameter from the `runcmd` step
-        run: |
-          echo "The uname output was ${{ steps.runcmd.outputs.uname }}"
