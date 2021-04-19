@@ -9,8 +9,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Install libffi-dev
+      run: sudo apt update | sudo apt install libffi-dev
+    - name: Install cffi
+      run: pip3 install cffi
+
     - uses: uraimo/run-on-arch-action@v2.0.5
-      name: Run commands
+      name: build
       id: runcmd
       with:
         arch: armv7
@@ -18,17 +23,9 @@ jobs:
         # The shell to run commands with in the container
         shell: /bin/sh
         run: |
-          uname -a
-          echo ::set-output name=uname::$(uname -a)
-          apt-get update -y
-          apt-get install libffi-dev python3-pip git -y
-          pip3 install cffi
-          echo 111111111111
           make
-          echo 222222222222
           cp liblvgl.so /usr/local/lib | ldconfig
           python3 build.py
-          echo 333333333333
           mkdir -p output | mv _* liblvgl.so output
 
     - uses: actions/checkout@v2
