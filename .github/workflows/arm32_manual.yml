@@ -9,6 +9,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - uses: uraimo/run-on-arch-action@v2.0.5
       name: build
       id: runcmd
@@ -26,14 +28,11 @@ jobs:
           python3 build.py
           mkdir -p output | mv _* liblvgl.so output
 
-    - uses: actions/checkout@v2
-      with:
-        ref: build
     - name: Git push commit
       run: |
         git config --global user.name 'github workflow'
         git config --global user.email 'github-workflow@users.noreply.github.com'
-        #git checkout build
+        git checkout build
         git add -f output/*
         git diff --quiet && git diff --staged --quiet || git commit -am 'manual workflow build'
         git push
